@@ -1,15 +1,20 @@
 MQTT:
+
 Ref: https://wildanmsyah.wordpress.com/2017/05/11/mqtt-android-client-tutorial/?fbclid=IwAR0Uv5VfrScR6UdLh8EAzQLoveLaBAkpuX8LJdIevCZJTHqT4Fp0an0sLvU
+
 FIREBASE:
 Ref: https://fir-testing-e07e2.firebaseio.com/
 Ref: https://firebase.google.com/docs/database/android/start/
+
 BLE:
 Ref: https://stackoverflow.com/questions/9231598/how-to-read-all-bytes-together-via-bluetooth
 Ref: https://www.instructables.com/id/Android-Bluetooth-Control-LED-Part-2/
+
 Ref: https://stackoverflow.com/questions/32656510/register-broadcast-receiver-dynamically-does-not-work-bluetoothdevice-action-f
+
 Ref: https://developer.android.com/guide/topics/connectivity/bluetooth#java
 
-DB Types of plant
+DB Types of plant (Humid parameter based on Internet)
 
 	PLANT{
 		000{
@@ -99,11 +104,15 @@ Database Devices
 	}
 
 Each BLE have unique MAC address -> represent an area
+
 1 area have many pot, max 5 pot (1->5), can contains different kind of plants.
+
 Current is 2 pots only.
 
-RASPBERRY PI
-FB PLANT UPDATE
+## RASPBERRY PI
+
+### FB PLANT UPDATE
+
 zUPy: update PLANT type pot y
 
 1<=y<=5, 00<=xx<=99
