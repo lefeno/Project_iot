@@ -24,8 +24,8 @@ DB Types of plant (Humid parameter based on Internet)
 			}
 		}
 		001{
-		id: 001
-		name: Succulent	//Sen da
+			id: 001
+			name: Succulent	//Sen da
 			Humid{
 				max: 70
 				min: 40
@@ -52,7 +52,7 @@ Database Devices
 				pot1{
 					type: 000
 					auto: true
-       					commands{
+					commands{
           					key0
 	        	  				id: key0
         					      	value: 123
