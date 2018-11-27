@@ -118,6 +118,8 @@ Current is 2 pots only.
 - Byxxz: App -> MQTT -> Pi, auto water pot y only with humidity xx%
 - If auto water all pots, for each current pot, send Byxxz
 - Cyxxz: App -> MQTT -> Pi, water with xx% humidity, xx is maximum humidity that requires for the plant at pot y
+- Ry00z: App -> MQTT -> Pi, self water pot y only with humidity xx%
+- If self water all pots, for each current pot, send Ry00z
 - yxx: Pi -> Device
 
 ### DATA
