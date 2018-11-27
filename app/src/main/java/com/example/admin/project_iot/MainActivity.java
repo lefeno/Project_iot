@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -52,6 +55,7 @@ public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int MAX_POT_EACH_BLE = 5;
     private static final int MAX_BLE = 2;
+    private List<ParamPot> listAutoPot;
 
     private BluetoothAdapter mBluetoothAdapter = null;
     public static String EXTRA_ADDRESS = "device_address";
@@ -79,10 +83,20 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //if the device has bluetooth
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        // Register to MQTT
+        try {
+            mqttControlRead = new MqttControl(topicRead, "ClientRead", true);
+            mqttControlWriteHumid = new MqttControl(topicWriteHumid, "ClientHumid", false);
+            mqttControlWriteLog = new MqttControl(topicWriteLog, "ClientLog", false);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+        // Register to Firebase
+        databaseParam = FirebaseDatabase.getInstance().getReference("db");
 
-        //Check BLE adapter and scan all paired BLE
+//        //if the device has bluetooth
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+//        //Check BLE adapter and scan all paired BLE
         if (mBluetoothAdapter == null) {
             //Show a message that the device has no bluetooth adapter
             Log.d(TAG, "Bluetooth Device Not Available");
@@ -109,21 +123,11 @@ public class MainActivity extends Activity {
             // Connect to all HC06 Bluetooth in paired list
             new ConnectBT().execute();
 
-            // Register to MQTT
-            try {
-                mqttControlRead = new MqttControl(topicRead, "ClientRead", true);
-                mqttControlWriteHumid = new MqttControl(topicWriteHumid, "ClientHumid", false);
-                mqttControlWriteLog = new MqttControl(topicWriteLog, "ClientLog", false);
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
-
-            // Register to Firebase
-            databaseParam = FirebaseDatabase.getInstance().getReference("db");
-            // Continuously read data and send to mqtt and firebase
             mHandler.post(mHandleData);
         }
     }
+
+
 
     // We assume that all bluetooths have been paired with raspberry pi to avoid complexity
     private void pairedDevicesList() {

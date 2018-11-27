@@ -11,53 +11,52 @@ BLE:
 - https://www.instructables.com/id/Android-Bluetooth-Control-LED-Part-2/
 - https://stackoverflow.com/questions/32656510/register-broadcast-receiver-dynamically-does-not-work-bluetoothdevice-action-f
 - https://developer.android.com/guide/topics/connectivity/bluetooth#java
+- https://viblo.asia/p/tim-hieu-ve-bluetooth-api-tren-android-tao-mot-ung-dung-bluetooth-scanner-3wjAM7JARmWe
+- https://stackoverflow.com/questions/15025852/how-to-move-bluetooth-activity-into-a-service
+- https://developer.android.com/guide/components/bound-services#java
 
 DB Types of plant (Max, min parameters based on Internet)
 
-	PLANT{
-		000{
-			id: 000
+	plant{
+		0{
+			id: 0
 			name: Cress	//Rau mam
-			Humid{
-				max: 95
-				min: 80
-			}
+			humid_max: 95
+			humid_min: 80
 		}
-		001{
-			id: 001
+
+		1{
+			id: 1
 			name: Succulent	//Sen da
-			Humid{
-				max: 70
-				min: 40
+			humid_max: 70
+			humid_min: 40
 			}
 		}
-		002{
-			id: 002
+
+		2{
+			id: 2
 			name: Catus //Xuong rong
-			Humid{
-				max: 70
-				min: 20
-			}
-		}		
+			humid_max: 70
+			humid_min: 20
+		}
+				
 	}
 
 Database Devices
 
-	DB{
-		User0{
-			MAC0{
-				tree: 
-					000
-					001
+	db{
+		user0{
+			mac0{
 				pot1{
-					type: 000
+					type: 0
 					auto: true
+					humid_max: 95 
+					humid_min: 80
 					commands{
           					key0
 	        	  				id: key0
         					      	value: 123
 							time: dd/mm/yyy hh:mm:ss
-		
        	  					key1
          						id: key1
               						value: 456
@@ -68,14 +67,14 @@ Database Devices
 				              		id: key2
 					              	value: 911
 							time: dd/mm/yyy hh:mm:ss
-						        key3
+						key3
        					      		id: key3
 				             	 	value 905
 							time: dd/mm/yyy hh:mm:ss
 			        	}
 			        	data{
 					        key4
-			              		id: key4
+			              			id: key4
 				              		value: 234
 							time: dd/mm/yyy hh:mm:ss
 				          	key5
@@ -83,62 +82,62 @@ Database Devices
 				              		value: 345
 							time: dd/mm/yyy hh:mm:ss
 			        	}
-				 }
+				}
 				pot2{
-					type: 001
+					type: 1
 					auto: false
+					humid_max: 70 
+					humid_min: 40
 				}
-			   }
- 			MAC1{
+			}
+ 			mac1{
+				pot1{
+				}
 				pot2{
-				}
-
-				pot3{
 				}
 			}
 		}
 
-		User1{
+		user1{
 		}
 	}
 Each BLE have unique MAC address -> represent an area.
-1 area have many pot, max 5 pot (1->5), can contains different kind of plants.
-Current is 2 pots only.
+- 1 area have many pot, max 5 pot (1->5), can contains different kind of plants.
+Current is 2 pots only. 
+- Default auto = false.
 
 ## COMMUNICATION CODE
 
-### FB PLANT UPDATE
-- zUPy: update PLANT type pot y
+### Notice
+- y: pot yth (1<=y<=5) 
+- xx: humidity (00<=xx<=99)
+- z: MAC address (17 chars)
+- DB: MQTT, FB
 
 ### CONTROL
-- 1<=y<=5, 00<=xx<=99
-- zAT0: auto water all pots
-- zATy: auto water pot y only
-- z: MAC address (17 chars)
-- z93y: Pi -> MQTT
-- z94y: MQTT -> Pi
-- zxxy: Pi -> Device
-- water with xx% humidity, xx is maximum humidity that requires for the plant at pot y
+- Byxxz: App -> MQTT -> Pi, auto water pot y only with humidity xx%
+- If auto water all pots, for each current pot, send Byxxz
+- Cyxxz: App -> MQTT -> Pi, water with xx% humidity, xx is maximum humidity that requires for the plant at pot y
 - yxx: Pi -> Device
 
 ### DATA
-- zyxx: Device -> Pi -> FB
-- send data to mqtt and firebase, xx is humidity at pot y
+- yxx: Device -> Pi
+- Dyxxz: Pi -> DB, send data to mqtt and firebase, xx is humidity at pot y
 
 ### LOG
-- 90y: Device -> Pi
-- z90y: Pi -> FB
-- Meaning: water successfully
+- yEE: Device -> Pi
+- Ey00z: Pi -> DB
+- Meaning: water successfully at pot y
 
-- 91y: Device -> Pi
-- z91y: Pi -> FB
-- Meaning: water error
+- yFF: Device -> Pi
+- Fy00z: Pi -> DB
+- Meaning: water error at pot y
 
-- z92: Pi -> FB
+- G000z: Pi -> DB
 - Meaning: BLE MAC error connection
 
-- 92y: Device -> Pi
-- z92y: Pi -> FB
+- yHH: Device -> Pi
+- Hy00z: Pi -> DB
 - Meaning: Pot y at BLE MAC error connection
 
 MQTT have channels:
