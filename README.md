@@ -1,18 +1,15 @@
-MQTT:
-
-Ref: https://wildanmsyah.wordpress.com/2017/05/11/mqtt-android-client-tutorial/?fbclid=IwAR0Uv5VfrScR6UdLh8EAzQLoveLaBAkpuX8LJdIevCZJTHqT4Fp0an0sLvU
+MQTT Ref:
+- https://wildanmsyah.wordpress.com/2017/05/11/mqtt-android-client-tutorial/?fbclid=IwAR0Uv5VfrScR6UdLh8EAzQLoveLaBAkpuX8LJdIevCZJTHqT4Fp0an0sLvU
 
 FIREBASE:
-Ref: https://fir-testing-e07e2.firebaseio.com/
-Ref: https://firebase.google.com/docs/database/android/start/
+- https://fir-testing-e07e2.firebaseio.com/
+- https://firebase.google.com/docs/database/android/start/
 
 BLE:
-Ref: https://stackoverflow.com/questions/9231598/how-to-read-all-bytes-together-via-bluetooth
-Ref: https://www.instructables.com/id/Android-Bluetooth-Control-LED-Part-2/
-
-Ref: https://stackoverflow.com/questions/32656510/register-broadcast-receiver-dynamically-does-not-work-bluetoothdevice-action-f
-
-Ref: https://developer.android.com/guide/topics/connectivity/bluetooth#java
+- https://stackoverflow.com/questions/9231598/how-to-read-all-bytes-together-via-bluetooth
+- https://www.instructables.com/id/Android-Bluetooth-Control-LED-Part-2/
+- https://stackoverflow.com/questions/32656510/register-broadcast-receiver-dynamically-does-not-work-bluetoothdevice-action-f
+- https://developer.android.com/guide/topics/connectivity/bluetooth#java
 
 DB Types of plant (Humid parameter based on Internet)
 
@@ -103,46 +100,45 @@ Database Devices
 	User1{
 	}
 
-Each BLE have unique MAC address -> represent an area
-
+Each BLE have unique MAC address -> represent an area.
 1 area have many pot, max 5 pot (1->5), can contains different kind of plants.
-
 Current is 2 pots only.
 
 ## RASPBERRY PI
 
 ### FB PLANT UPDATE
+- zUPy: update PLANT type pot y
 
-zUPy: update PLANT type pot y
+### CONTROL CODE
+- 1<=y<=5, 00<=xx<=99
+- zAT0: auto water all pots
+- zATy: auto water pot y only
+- z: MAC address (17 chars)
+- z93y: Pi -> MQTT
+- z94y: MQTT -> Pi
+- zxxy: Pi -> Device
+- water with xx% humidity, xx is maximum humidity that requires for the plant at pot y
+- yxx: Pi -> Device
 
-1<=y<=5, 00<=xx<=99
-CONTROL CODE
-zAT0: auto water all pots
-zATy: auto water pot y only
-z: MAC address (17 chars)
-z93y: Pi -> MQTT
-z94y: MQTT -> Pi
-zxxy: Pi -> Device
-water with xx% humidity, xx is maximum humidity that requires for the plant
-at pot y
-yxx: Pi -> Device
+### DATA
+- zyxx: Device -> Pi -> FB
+- send data to mqtt and firebase, xx is humidity at pot y
 
-DATA
-zyxx: Device -> Pi -> FB
-send data to mqtt and firebase, xx is humidity at pot y
+### LOG
+- 90y: Device -> Pi
+- z90y: Pi -> FB
+- Meaning: water successfully
 
-LOG
-90y: Device -> Pi
-z90y: Pi -> FB
-Meaning: water successfully
-91y: Device -> Pi
-z91y: Pi -> FB
-Meaning: water error
-z92: Pi -> FB
-Meaning: BLE MAC error connection
-92y: Device -> Pi
-z92y: Pi -> FB
-Meaning: Pot y at BLE MAC error connection
+- 91y: Device -> Pi
+- z91y: Pi -> FB
+- Meaning: water error
+
+- z92: Pi -> FB
+- Meaning: BLE MAC error connection
+
+- 92y: Device -> Pi
+- z92y: Pi -> FB
+- Meaning: Pot y at BLE MAC error connection
 
 MQTT have channels:
 - humid: write only
