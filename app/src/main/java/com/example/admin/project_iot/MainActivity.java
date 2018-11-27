@@ -50,7 +50,8 @@ import java.util.UUID;
 public class MainActivity extends Activity {
     private Handler mHandler = new Handler();
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final int numberOfPotEachBLE = 6;
+    private static final int MAX_POT_EACH_BLE = 5;
+    private static final int MAX_BLE = 2;
 
     private BluetoothAdapter mBluetoothAdapter = null;
     public static String EXTRA_ADDRESS = "device_address";

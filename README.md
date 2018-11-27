@@ -1,18 +1,18 @@
+Link Firebase:
+https://fir-testing-e07e2.firebaseio.com/
 ### Reference
 MQTT:
 - https://wildanmsyah.wordpress.com/2017/05/11/mqtt-android-client-tutorial/?fbclid=IwAR0Uv5VfrScR6UdLh8EAzQLoveLaBAkpuX8LJdIevCZJTHqT4Fp0an0sLvU
 
 FIREBASE:
-- https://fir-testing-e07e2.firebaseio.com/
 - https://firebase.google.com/docs/database/android/start/
-
 BLE:
 - https://stackoverflow.com/questions/9231598/how-to-read-all-bytes-together-via-bluetooth
 - https://www.instructables.com/id/Android-Bluetooth-Control-LED-Part-2/
 - https://stackoverflow.com/questions/32656510/register-broadcast-receiver-dynamically-does-not-work-bluetoothdevice-action-f
 - https://developer.android.com/guide/topics/connectivity/bluetooth#java
 
-DB Types of plant (Humid parameter based on Internet)
+DB Types of plant (Max, min parameters based on Internet)
 
 	PLANT{
 		000{
@@ -96,11 +96,11 @@ Database Devices
 				pot3{
 				}
 			}
-	}
+		}
 
-	User1{
+		User1{
+		}
 	}
-
 Each BLE have unique MAC address -> represent an area.
 1 area have many pot, max 5 pot (1->5), can contains different kind of plants.
 Current is 2 pots only.
