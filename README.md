@@ -9,15 +9,47 @@ Ref: https://www.instructables.com/id/Android-Bluetooth-Control-LED-Part-2/
 Ref: https://stackoverflow.com/questions/32656510/register-broadcast-receiver-dynamically-does-not-work-bluetoothdevice-action-f
 Ref: https://developer.android.com/guide/topics/connectivity/bluetooth#java
 
+DB Types of plant
+
+PLANT{
+	000{
+		id: 000
+		name: Cress	//Rau mam
+		Humid{
+			max: 95
+			min: 80
+		}
+	}
+
+	001{
+		id: 000
+		name: Succulent	//Sen da
+		Humid{
+			max: 70
+			min: 40
+		}
+	}
+	002{
+		id: 002
+		name: Catus //Xuong rong
+		Humid{
+			max: 70
+			min: 20
+		}
+	}		
+}
+
 DB{
 User0{
    MAC0{
 	pot1{
+		type: 000
         	commands{
 	          key0
         	  	id: key0
 	              	value: 123
 			time: dd/mm/yyy hh:mm:ss
+			
         	  key1
               		id: key1
 	              	value: 456
@@ -46,6 +78,7 @@ User0{
  	}
 
 	pot2{
+		type: 001
 	}
    }
    MAC1{
