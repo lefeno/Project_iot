@@ -1,4 +1,5 @@
-MQTT Ref:
+### Reference
+MQTT:
 - https://wildanmsyah.wordpress.com/2017/05/11/mqtt-android-client-tutorial/?fbclid=IwAR0Uv5VfrScR6UdLh8EAzQLoveLaBAkpuX8LJdIevCZJTHqT4Fp0an0sLvU
 
 FIREBASE:
@@ -22,9 +23,9 @@ DB Types of plant (Humid parameter based on Internet)
 				min: 80
 			}
 		}
-			001{
-			id: 001
-			name: Succulent	//Sen da
+		001{
+		id: 001
+		name: Succulent	//Sen da
 			Humid{
 				max: 70
 				min: 40
@@ -61,7 +62,7 @@ Database Devices
          						id: key1
               						value: 456
 							time: dd/mm/yyy hh:mm:ss
-				        	}
+				        }
 			        	logs{
 		        		  	key2
 				              		id: key2
@@ -83,7 +84,7 @@ Database Devices
 							time: dd/mm/yyy hh:mm:ss
 			        	}
 				 }
-					pot2{
+				pot2{
 					type: 001
 					auto: false
 				}
@@ -104,12 +105,12 @@ Each BLE have unique MAC address -> represent an area.
 1 area have many pot, max 5 pot (1->5), can contains different kind of plants.
 Current is 2 pots only.
 
-## RASPBERRY PI
+## COMMUNICATION CODE
 
 ### FB PLANT UPDATE
 - zUPy: update PLANT type pot y
 
-### CONTROL CODE
+### CONTROL
 - 1<=y<=5, 00<=xx<=99
 - zAT0: auto water all pots
 - zATy: auto water pot y only
