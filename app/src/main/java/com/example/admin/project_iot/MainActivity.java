@@ -81,6 +81,7 @@ public class MainActivity extends Activity {
         //if the device has bluetooth
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
+        //Check BLE adapter and scan all paired BLE
         if (mBluetoothAdapter == null) {
             //Show a message that the device has no bluetooth adapter
             Log.d(TAG, "Bluetooth Device Not Available");
