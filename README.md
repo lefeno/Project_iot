@@ -126,7 +126,7 @@ Current is 2 pots only.
 
 ### DATA
 - yxx: Device -> Pi
-- Dyxxz: Pi -> FB, send data to mqtt and firebase, xx is humidity at pot y
+- Dyxxz: Pi -> DB, send data to mqtt and firebase, xx is humidity at pot y
 
 ### LOG
 - yEE: Device -> Pi

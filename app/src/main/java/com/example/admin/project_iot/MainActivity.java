@@ -53,9 +53,10 @@ import java.util.UUID;
 public class MainActivity extends Activity {
     private Handler mHandler = new Handler();
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final int MAX_POT_EACH_BLE = 5;
+    private static final int MAX_POT_EACH_BLE = 2;
     private static final int MAX_BLE = 2;
-    private List<ParamPot> listAutoPot;
+    public static ParamPot listAutoPot[] = new ParamPot[MAX_POT_EACH_BLE];
+    public static boolean auto[] = new boolean[MAX_POT_EACH_BLE];
 
     private BluetoothAdapter mBluetoothAdapter = null;
     public static String EXTRA_ADDRESS = "device_address";
@@ -68,32 +69,36 @@ public class MainActivity extends Activity {
     private boolean isBtnConnected = false;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    MqttControl mqttControlRead;
-    MqttControl mqttControlWriteHumid;
-    MqttControl mqttControlWriteLog;
-
-    private static final String topicWriteHumid = "humid";
-    private static final String topicWriteLog = "log";
-    private static final String topicRead = "command";
-
-    public static DatabaseReference databaseParam;
+    public static final String topicWriteHumid = "humid";
+    public static final String topicWriteLog = "log";
+    public static final String topicRead = "command";
+    private DatabaseReference databaseParam;
+    private MqttControl mqttControlRead;
+    private MqttControl mqttControlWriteHumid;
+    private MqttControl mqttControlWriteLog;
+    String address;
+    public static boolean sendCodeSuccess = false;
+    private int timer = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        for (int i = 0; i < listAutoPot.length; ++i) {
+            listAutoPot[i] = new ParamPot(0, -1, -1);
+            auto[i] = false;
+        }
         // Register to MQTT
         try {
-            mqttControlRead = new MqttControl(topicRead, "ClientRead", true);
-            mqttControlWriteHumid = new MqttControl(topicWriteHumid, "ClientHumid", false);
-            mqttControlWriteLog = new MqttControl(topicWriteLog, "ClientLog", false);
+            mqttControlRead = new MqttControl(MainActivity.topicRead, "ClientRead", true);
+            mqttControlWriteHumid = new MqttControl(MainActivity.topicWriteHumid, "ClientHumid", false);
+            mqttControlWriteLog = new MqttControl(MainActivity.topicWriteLog, "ClientLog", false);
         } catch (MqttException e) {
             e.printStackTrace();
         }
         // Register to Firebase
         databaseParam = FirebaseDatabase.getInstance().getReference("db");
-
 //        //if the device has bluetooth
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 //        //Check BLE adapter and scan all paired BLE
@@ -122,11 +127,9 @@ public class MainActivity extends Activity {
 
             // Connect to all HC06 Bluetooth in paired list
             new ConnectBT().execute();
-
             mHandler.post(mHandleData);
         }
     }
-
 
 
     // We assume that all bluetooths have been paired with raspberry pi to avoid complexity
@@ -136,11 +139,10 @@ public class MainActivity extends Activity {
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice bt : pairedDevices) {
                 // Get the device's name and the address
-                Log.d(TAG, bt.getName() + "\n" + bt.getAddress());
                 // Check if device is a HC-06 bluetooth
                 if ((bt.getName()).indexOf("HC-06") > -1) {
                     list.add(bt.getName() + "\n" + bt.getAddress());
-                    Log.d(TAG, "Found");
+//                    Log.d(TAG, "Found");
                 }
             }
         } else {
@@ -166,7 +168,7 @@ public class MainActivity extends Activity {
 //                    myBluetooth = BluetoothAdapter.getDefaultAdapter();
                     //connect to the device's address and checks if it's available
                     String info = list.get(0).toString();
-                    String address = info.substring(info.length() - 17);
+                    address = info.substring(info.length() - 17);
                     Log.d(TAG, address);
                     BluetoothDevice dispositivo = mBluetoothAdapter.getRemoteDevice(address);
                     //create a RFCOMM (SPP) connection
@@ -189,6 +191,7 @@ public class MainActivity extends Activity {
             super.onPostExecute(result);
             if (!ConnectSuccess) {
                 Log.d(TAG, "Connection Failed, Is it a SPP BLuetooth? Try again.");
+
                 finish();
             } else {
                 Log.d(TAG, "Connected.");
@@ -226,29 +229,64 @@ public class MainActivity extends Activity {
                     Log.d(TAG, "Error");
                 }
             }
-            mHandler.postDelayed(mHandleData, 50);
+            mHandler.postDelayed(mHandleData, 10);
         }
     };
 
     private void handleCode() {
-        if (code.length() == 3 && Integer.parseInt(code) >= 100 && Integer.parseInt(code) <= 918) {
-            String check = code.substring(0,2);
+        if (code.length() == 3) {
+            String check = code.substring(1);
             switch (check) {
-                case "90":
-                case "91":
+                case "EE":
+                case "FF":
+                    sendCodeSuccess = false;
+                    timer = 0;
                     try {
-                        String pot = code.substring(2);
-                        mqttControlWriteLog.sendmessage(code + "", topicWriteLog);
-                        addParam(check,"logs",pot);
+                        String pot = code.substring(0, 1);
+                        mqttControlWriteLog.sendmessage(code.substring(1, 2) + pot + "00" + address, MainActivity.topicWriteLog);
+                        if (check == "EE") {
+                            addParam("Succeed", "logs", pot);
+                        } else {
+                            addParam("Fail", "logs", pot);
+                        }
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
                     break;
                 default:
                     try {
-                        String pot = code.substring(2);
-                        mqttControlWriteHumid.sendmessage(code + "", topicWriteHumid);
-                        addParam(check,"data",pot);
+                        int pot = Integer.parseInt(code.substring(0, 1));
+                        mqttControlWriteHumid.sendmessage("D" + code + address, MainActivity.topicWriteHumid);
+                        addParam("Fail", "data", pot + "");
+                        if (sendCodeSuccess) {
+                            ++timer;
+                        }
+                        //After 5 min from when timer is trigger
+                        if (timer > 10) {
+                            timer = 0;
+                            Log.d(TAG, "Please send code again");
+                            sendCodeSuccess = false;
+                            mqttControlWriteLog.sendmessage("F" + pot + "00" + address, MainActivity.topicWriteLog);
+                            addParam("Fail", "logs", pot + "");
+                        }
+                        if (auto[pot - 1] && !sendCodeSuccess) {
+                            Log.d(TAG, "Auto");
+                            ParamPot tmp = null;
+                            tmp = listAutoPot[pot - 1];
+                            Log.d(TAG, "Humid min: " + listAutoPot[pot - 1].getHumid_min());
+                            int humid = Integer.parseInt(check);
+                            if (humid < tmp.getHumid_min()) {
+                                String send = Integer.toString(pot) + Integer.toString(tmp.getHumid_max());
+                                Log.d(TAG, "Send");
+                                try {
+                                    btSocket.getOutputStream().write(send.getBytes());
+                                    sendCodeSuccess = true;
+                                } catch (IOException e) {
+                                    Log.d(TAG, "Error");
+                                }
+                                break;
+                            }
+                        }
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
@@ -257,21 +295,22 @@ public class MainActivity extends Activity {
         } else {
             Log.d(TAG, "Code received invalid");
         }
-
     }
 
-    private void addParam(String value, String type, String pot){
+    private void addParam(String value, String type, String pot) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date = new Date();
         String time = formatter.format(date);
-        String id = databaseParam.child("user1").child(pot).child(type).push().getKey();
-        Param param = new Param(id, value ,time);
-        databaseParam.child("user1").child(pot).child(type).child(id).setValue(param);
+        String id = "0";
+//        String id = databaseParam.child("user1").child(address).child("pot" + pot).child(type).push().getKey();
+        Param param = new Param(id, value, time);
+        databaseParam.child("user1").child(address).child("pot" + pot).child(type).child(id).setValue(param);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
         if (btSocket != null) {
             //if the socket is busy
             try {
@@ -290,3 +329,4 @@ public class MainActivity extends Activity {
         }
     }
 }
+
