@@ -6,6 +6,7 @@ MQTT:
 
 FIREBASE:
 - https://firebase.google.com/docs/database/android/start/
+
 BLE:
 - https://stackoverflow.com/questions/9231598/how-to-read-all-bytes-together-via-bluetooth
 - https://www.instructables.com/id/Android-Bluetooth-Control-LED-Part-2/
@@ -58,8 +59,8 @@ Database Devices
         					      	value: 123
 							time: dd/mm/yyy hh:mm:ss
        	  					key1
-         						id: key1
-              						value: 456
+         						id: key1	
+							value: 456
 							time: dd/mm/yyy hh:mm:ss
 				        }
 			        	logs{
@@ -68,7 +69,7 @@ Database Devices
 					              	value: 911
 							time: dd/mm/yyy hh:mm:ss
 						key3
-       					      		id: key3
+							id: key3
 				             	 	value 905
 							time: dd/mm/yyy hh:mm:ss
 			        	}
@@ -115,16 +116,17 @@ Current is 2 pots only.
 - DB: MQTT, FB
 
 ### CONTROL
-- Byxxz: App -> MQTT -> Pi, auto water pot y only with humidity xx%
+- Byx1x2x3x4z: App -> DB -> Pi, auto water pot y only with max humidity x1x2%, min humidity x3x4%
 - If auto water all pots, for each current pot, send Byxxz
-- Cyxxz: App -> MQTT -> Pi, water with xx% humidity, xx is maximum humidity that requires for the plant at pot y
-- Ry00z: App -> MQTT -> Pi, self water pot y only with humidity xx%
-- If self water all pots, for each current pot, send Ry00z
+- Cyxxz: App -> DB -> Pi, water with xx% humidity, xx is maximum humidity that requires for the plant at pot y
 - yxx: Pi -> Device
+
+- Ry00z: App -> DB -> Pi, self water pot y only
+- If self water all pots, for each current pot, send Ry00z
 
 ### DATA
 - yxx: Device -> Pi
-- Dyxxz: Pi -> DB, send data to mqtt and firebase, xx is humidity at pot y
+- Dyxxz: Pi -> FB, send data to mqtt and firebase, xx is humidity at pot y
 
 ### LOG
 - yEE: Device -> Pi
@@ -143,6 +145,5 @@ Current is 2 pots only.
 - Meaning: Pot y at BLE MAC error connection
 
 MQTT have channels:
-- humid: write only
 - command: read only
 - log: write only
