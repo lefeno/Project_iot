@@ -133,11 +133,11 @@ Current is 2 pots only.
 - Ey00z: Pi -> DB
 - Meaning: water successfully at pot y
 
-- yFF: Device -> Pi
-- Fy00z: Pi -> DB
+- yFF: Device -> Pi, not used now
+- Fy00z: Pi -> DB, not used now
 - Meaning: water error at pot y
 
-- G000z: Pi -> DB
+- G000z: Pi -> DB, not used now
 - Meaning: BLE MAC error connection
 
 - yHH: Device -> Pi
