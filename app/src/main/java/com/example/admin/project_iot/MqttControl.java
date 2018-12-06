@@ -14,9 +14,9 @@ import java.io.IOException;
 import java.util.List;
 
 public class MqttControl implements MqttCallback {
-    private static final String username = "jjcndkem";
-    private static final String password = "xZxMRzNWbR-m";
-    private static final String serveruri = "tcp://m15.cloudmqtt.com:14731";
+    private static final String username = "fhyfukyy";
+    private static final String password = "FqEgXcCxxD6v";
+    private static final String serveruri = "tcp://m14.cloudmqtt.com:14273";
     private String clientId = "raspberry";
     private String toPic = "command";
     private static final String TAG = MqttControl.class.getSimpleName();

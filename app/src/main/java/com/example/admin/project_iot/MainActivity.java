@@ -192,7 +192,7 @@ public class MainActivity extends Activity {
             if (!ConnectSuccess) {
                 Log.d(TAG, "Connection Failed, Is it a SPP BLuetooth? Try again.");
 
-                finish();
+//                finish();
             } else {
                 Log.d(TAG, "Connected.");
                 isBtnConnected = true;
@@ -209,6 +209,7 @@ public class MainActivity extends Activity {
                     int bytes = 0;
                     code = "";
                     msg = btSocket.getInputStream();
+                    Log.d("DO",msg.read() + "");
                     if (msg.read() == 'x') {
                         while (buffer[bytes] != 'y') {
                             buffer[bytes] = (byte) msg.read();
@@ -223,6 +224,8 @@ public class MainActivity extends Activity {
                                 ++bytes;
                             }
                         }
+                    } else {
+                        Log.d(TAG,"Data receive error");
                     }
 
                 } catch (IOException e) {
@@ -244,6 +247,7 @@ public class MainActivity extends Activity {
                     try {
                         String pot = code.substring(0, 1);
                         mqttControlWriteLog.sendmessage(code.substring(1, 2) + pot + "00" + address, MainActivity.topicWriteLog);
+
                         if (check == "EE") {
                             addParam("Succeed", "logs", pot);
                         } else {
@@ -256,13 +260,15 @@ public class MainActivity extends Activity {
                 default:
                     try {
                         int pot = Integer.parseInt(code.substring(0, 1));
-                        mqttControlWriteHumid.sendmessage("D" + code + address, MainActivity.topicWriteHumid);
-                        addParam("Fail", "data", pot + "");
+                        String data = "D" + code + address;
+                        mqttControlWriteHumid.sendmessage(data, MainActivity.topicWriteHumid);
+                        databaseParam.child("user0").child(address).child("pot" + pot).child("value").setValue(data);
+                        addParam(code.substring(1), "data", pot + "");
                         if (sendCodeSuccess) {
                             ++timer;
                         }
                         //After 5 min from when timer is trigger
-                        if (timer > 10) {
+                        if (timer > 50) {
                             timer = 0;
                             Log.d(TAG, "Please send code again");
                             sendCodeSuccess = false;
@@ -304,7 +310,7 @@ public class MainActivity extends Activity {
         String id = "0";
 //        String id = databaseParam.child("user1").child(address).child("pot" + pot).child(type).push().getKey();
         Param param = new Param(id, value, time);
-        databaseParam.child("user1").child(address).child("pot" + pot).child(type).child(id).setValue(param);
+        databaseParam.child("user0").child(address).child("pot" + pot).child(type).child(id).setValue(param);
     }
 
     @Override
