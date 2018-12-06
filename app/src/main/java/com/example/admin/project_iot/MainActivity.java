@@ -51,7 +51,7 @@ import java.util.UUID;
  */
 
 public class MainActivity extends Activity {
-    private Handler mHandler = new Handler();
+    public static Handler mHandler = new Handler();
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int MAX_POT_EACH_BLE = 2;
     private static final int MAX_BLE = 2;
@@ -91,9 +91,9 @@ public class MainActivity extends Activity {
         }
         // Register to MQTT
         try {
-            mqttControlRead = new MqttControl(MainActivity.topicRead, "ClientRead", true);
-            mqttControlWriteHumid = new MqttControl(MainActivity.topicWriteHumid, "ClientHumid", false);
-            mqttControlWriteLog = new MqttControl(MainActivity.topicWriteLog, "ClientLog", false);
+            mqttControlRead = new MqttControl(MainActivity.topicRead, "A", true);
+            mqttControlWriteHumid = new MqttControl(MainActivity.topicWriteHumid, "B", false);
+            mqttControlWriteLog = new MqttControl(MainActivity.topicWriteLog, "C", false);
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -209,7 +209,7 @@ public class MainActivity extends Activity {
                     int bytes = 0;
                     code = "";
                     msg = btSocket.getInputStream();
-                    Log.d("DO",msg.read() + "");
+//                    Log.d("DO",msg.read() + "");
                     if (msg.read() == 'x') {
                         while (buffer[bytes] != 'y') {
                             buffer[bytes] = (byte) msg.read();
@@ -232,7 +232,7 @@ public class MainActivity extends Activity {
                     Log.d(TAG, "Error");
                 }
             }
-            mHandler.postDelayed(mHandleData, 10);
+            mHandler.postDelayed(mHandleData, 200);
         }
     };
 
@@ -248,7 +248,7 @@ public class MainActivity extends Activity {
                         String pot = code.substring(0, 1);
                         mqttControlWriteLog.sendmessage(code.substring(1, 2) + pot + "00" + address, MainActivity.topicWriteLog);
 
-                        if (check == "EE") {
+                        if (check.equals("EE")) {
                             addParam("Succeed", "logs", pot);
                         } else {
                             addParam("Fail", "logs", pot);
@@ -262,7 +262,7 @@ public class MainActivity extends Activity {
                         int pot = Integer.parseInt(code.substring(0, 1));
                         String data = "D" + code + address;
                         mqttControlWriteHumid.sendmessage(data, MainActivity.topicWriteHumid);
-                        databaseParam.child("user0").child(address).child("pot" + pot).child("value").setValue(data);
+                        databaseParam.child("user0").child(address).child("pot" + pot).child("value").setValue(code.substring(1));
                         addParam(code.substring(1), "data", pot + "");
                         if (sendCodeSuccess) {
                             ++timer;
@@ -307,8 +307,8 @@ public class MainActivity extends Activity {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date = new Date();
         String time = formatter.format(date);
-        String id = "0";
-//        String id = databaseParam.child("user1").child(address).child("pot" + pot).child(type).push().getKey();
+//        String id = "0";
+        String id = databaseParam.child("user1").child(address).child("pot" + pot).child(type).push().getKey();
         Param param = new Param(id, value, time);
         databaseParam.child("user0").child(address).child("pot" + pot).child(type).child(id).setValue(param);
     }

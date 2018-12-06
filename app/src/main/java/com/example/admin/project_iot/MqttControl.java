@@ -14,11 +14,11 @@ import java.io.IOException;
 import java.util.List;
 
 public class MqttControl implements MqttCallback {
-    private static final String username = "fhyfukyy";
-    private static final String password = "FqEgXcCxxD6v";
-    private static final String serveruri = "tcp://m14.cloudmqtt.com:14273";
+    private static final String username = "uaijweiy";
+    private static final String password = "Fsz3BK1eUXev";
+    private static final String serveruri = "tcp://m10.cloudmqtt.com:13170";
     private String clientId = "raspberry";
-    private String toPic = "command";
+    private String toPic = "com";
     private static final String TAG = MqttControl.class.getSimpleName();
     private static final int QOs = 1;
     private MqttClient client;
@@ -47,9 +47,9 @@ public class MqttControl implements MqttCallback {
         MqttConnectOptions connectOptions = new MqttConnectOptions();
         connectOptions.setUserName(username);
         connectOptions.setPassword(password.toCharArray());
-        connectOptions.setCleanSession(false);
+        connectOptions.setCleanSession(true);
         connectOptions.setAutomaticReconnect(true);
-        connectOptions.setKeepAliveInterval(30);
+        connectOptions.setKeepAliveInterval(200);
         return connectOptions;
     }
 
@@ -71,9 +71,11 @@ public class MqttControl implements MqttCallback {
     @Override
     public void connectionLost(Throwable cause) {
         try {
+//            MainActivity.mHandler.removeCallbacksAndMessages(null);
             Log.d(TAG, "Reconnecting ~ ................(-______-)#......");
             client.connect(MqttControl.connectOptionchoice());
             Log.d(TAG, "Connected success ! ");
+
 
         } catch (MqttException e) {
             e.printStackTrace();
