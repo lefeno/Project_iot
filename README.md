@@ -51,6 +51,9 @@ Database Devices
 				pot1{
 					type: 0
 					auto: true
+					id: 1
+					name: pot1
+					value: <current humid data>
 					humid_max: 95 
 					humid_min: 80
 					commands{
@@ -89,6 +92,9 @@ Database Devices
 					auto: false
 					humid_max: 70 
 					humid_min: 40
+					id: 1
+					name: pot1
+					value: <current humid data>
 				}
 			}
  			mac1{
@@ -136,13 +142,6 @@ Current is 2 pots only.
 - yFF: Device -> Pi, not used now
 - Fy00z: Pi -> DB, not used now
 - Meaning: water error at pot y
-
-- G000z: Pi -> DB, not used now
-- Meaning: BLE MAC error connection
-
-- yHH: Device -> Pi
-- Hy00z: Pi -> DB
-- Meaning: Pot y at BLE MAC error connection
 
 MQTT have channels:
 - command: read only
