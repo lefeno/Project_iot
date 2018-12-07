@@ -10,11 +10,15 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 
@@ -73,10 +77,14 @@ public class MainActivity extends Activity {
     public static final String topicWriteLog = "log";
     public static final String topicRead = "command";
     private DatabaseReference databaseParam;
-    private MqttControl mqttControlRead;
-    private MqttControl mqttControlWriteHumid;
-    private MqttControl mqttControlWriteLog;
-    String address;
+
+    private int i = 0;
+    private DatabaseReference dbMQTT[] = new DatabaseReference[MAX_POT_EACH_BLE];
+    private String cmd;
+//    private MqttControl mqttControlRead;
+//    private MqttControl mqttControlWriteHumid;
+//    private MqttControl mqttControlWriteLog;
+    String address = "00:18:E4:00:11:E4";
     public static boolean sendCodeSuccess = false;
     private int timer = 0;
 
@@ -89,16 +97,36 @@ public class MainActivity extends Activity {
             listAutoPot[i] = new ParamPot(0, -1, -1);
             auto[i] = false;
         }
+
+
         // Register to MQTT
-        try {
-            mqttControlRead = new MqttControl(MainActivity.topicRead, "A", true);
-            mqttControlWriteHumid = new MqttControl(MainActivity.topicWriteHumid, "B", false);
-            mqttControlWriteLog = new MqttControl(MainActivity.topicWriteLog, "C", false);
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            mqttControlRead = new MqttControl(MainActivity.topicRead, "A", true);
+//            mqttControlWriteHumid = new MqttControl(MainActivity.topicWriteHumid, "B", false);
+//            mqttControlWriteLog = new MqttControl(MainActivity.topicWriteLog, "C", false);
+//        } catch (MqttException e) {
+//            e.printStackTrace();
+//        }
         // Register to Firebase
         databaseParam = FirebaseDatabase.getInstance().getReference("db");
+
+        for (i = 0; i < MAX_POT_EACH_BLE; ++i){
+            dbMQTT[i] = FirebaseDatabase.getInstance().getReference("db").child("user0").child(address).child("pot" + (i+1)).child("commands");
+            dbMQTT[i].addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Commands key = dataSnapshot.getValue(Commands.class);
+                    cmd = key.getKey();
+                    checkPayload(cmd);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+
 //        //if the device has bluetooth
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 //        //Check BLE adapter and scan all paired BLE
@@ -147,6 +175,51 @@ public class MainActivity extends Activity {
             }
         } else {
             Log.d(TAG, "No Paired Bluetooth Devices Found");
+        }
+    }
+
+    private void checkPayload(String payload) {
+        if(payload.length() < 21){
+            return;
+        }
+        String tmp;
+        int id;
+        int humid_max;
+        int humid_min;
+        tmp = payload.substring(1);
+        id = Integer.parseInt(payload.substring(1, 2));
+        humid_max = Integer.parseInt(payload.substring(2, 4));
+        humid_min = Integer.parseInt(payload.substring(4, 6));
+        switch (payload.charAt(0)) {
+            case 'B':
+                if (tmp.length() == 22) {
+                    ParamPot pot = new ParamPot(id, humid_max, humid_min);
+                    MainActivity.listAutoPot[id-1] = pot;
+                    MainActivity.listAutoPot[id - 1].potAvailable += 1;
+                    Log.d(TAG,"List2:" + MainActivity.listAutoPot[id - 1].potAvailable);
+                    MainActivity.auto[id-1] = true;
+                }
+                break;
+            case 'C':
+                Log.d(TAG,"C");
+                if (tmp.length() == 20 && MainActivity.btSocket != null) {
+                    MainActivity.sendCodeSuccess = true;
+                    try {
+                        (MainActivity.btSocket).getOutputStream().write(payload.substring(1,4).getBytes());
+                    } catch (IOException e) {
+                        Log.d(TAG, "Error");
+                    }
+                }
+                break;
+            case 'R':
+                if (tmp.length() == 20) {
+                    Log.d(TAG,"R");
+                    MainActivity.listAutoPot[id-1].setId(0);
+                    MainActivity.auto[id - 1] = false;
+                }
+                break;
+            default:
+                break;
         }
     }
 
@@ -238,32 +311,41 @@ public class MainActivity extends Activity {
 
     private void handleCode() {
         if (code.length() == 3) {
+            try{
+                int d = Integer.parseInt(code);
+            } catch (NumberFormatException nfe){
+                Log.d(TAG,"Error value");
+                return;
+            }
             String check = code.substring(1);
             switch (check) {
                 case "EE":
                 case "FF":
                     sendCodeSuccess = false;
                     timer = 0;
-                    try {
+//                    try {
                         String pot = code.substring(0, 1);
-                        mqttControlWriteLog.sendmessage(code.substring(1, 2) + pot + "00" + address, MainActivity.topicWriteLog);
+                        Commands key = new Commands("0");
+                        FirebaseDatabase.getInstance().getReference("db").child("user0").child(address).child("pot1").child("commands").setValue(key);
+
+//                        mqttControlWriteLog.sendmessage(code.substring(1, 2) + pot + "00" + address, MainActivity.topicWriteLog);
 
                         if (check.equals("EE")) {
                             addParam("Succeed", "logs", pot);
                         } else {
                             addParam("Fail", "logs", pot);
                         }
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
+//                    } catch (MqttException e) {
+//                        e.printStackTrace();
+//                    }
                     break;
                 default:
-                    try {
-                        int pot = Integer.parseInt(code.substring(0, 1));
+//                    try {
+                        int p = Integer.parseInt(code.substring(0, 1));
                         String data = "D" + code + address;
-                        mqttControlWriteHumid.sendmessage(data, MainActivity.topicWriteHumid);
-                        databaseParam.child("user0").child(address).child("pot" + pot).child("value").setValue(code.substring(1));
-                        addParam(code.substring(1), "data", pot + "");
+//                        mqttControlWriteHumid.sendmessage(data, MainActivity.topicWriteHumid);
+                        databaseParam.child("user0").child(address).child("pot" + p).child("value").setValue(code.substring(1));
+                        addParam(code.substring(1), "data", p + "");
                         if (sendCodeSuccess) {
                             ++timer;
                         }
@@ -272,17 +354,17 @@ public class MainActivity extends Activity {
                             timer = 0;
                             Log.d(TAG, "Please send code again");
                             sendCodeSuccess = false;
-                            mqttControlWriteLog.sendmessage("F" + pot + "00" + address, MainActivity.topicWriteLog);
-                            addParam("Fail", "logs", pot + "");
+//                            mqttControlWriteLog.sendmessage("F" + pot + "00" + address, MainActivity.topicWriteLog);
+                            addParam("Fail", "logs", p + "");
                         }
-                        if (auto[pot - 1] && !sendCodeSuccess) {
+                        if (auto[p - 1] && !sendCodeSuccess) {
                             Log.d(TAG, "Auto");
                             ParamPot tmp = null;
-                            tmp = listAutoPot[pot - 1];
-                            Log.d(TAG, "Humid min: " + listAutoPot[pot - 1].getHumid_min());
+                            tmp = listAutoPot[p - 1];
+                            Log.d(TAG, "Humid min: " + listAutoPot[p - 1].getHumid_min());
                             int humid = Integer.parseInt(check);
                             if (humid < tmp.getHumid_min()) {
-                                String send = Integer.toString(pot) + Integer.toString(tmp.getHumid_max());
+                                String send = Integer.toString(p) + Integer.toString(tmp.getHumid_max());
                                 Log.d(TAG, "Send");
                                 try {
                                     btSocket.getOutputStream().write(send.getBytes());
@@ -293,9 +375,9 @@ public class MainActivity extends Activity {
                                 break;
                             }
                         }
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
+//                    } catch (MqttException e) {
+//                        e.printStackTrace();
+//                    }
                     break;
             }
         } else {
@@ -326,13 +408,13 @@ public class MainActivity extends Activity {
             }
         }
 
-        try {
-            mqttControlRead.close();
-            mqttControlWriteHumid.close();
-            mqttControlWriteLog.close();
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            mqttControlRead.close();
+//            mqttControlWriteHumid.close();
+//            mqttControlWriteLog.close();
+//        } catch (MqttException e) {
+//            e.printStackTrace();
+//        }
     }
 }
 
